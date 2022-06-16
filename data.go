@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
@@ -15,9 +14,9 @@ func makeUsers(filename string) ([]User, error) {
 		return []User{}, err
 	}
 
-	/*if len(data) == 0 {
-		return []User{}, fmt.Errorf("Empty file %v", filename)
-	}*/
+	if len(data) == 0 {
+		return []User{}, nil
+	}
 
 	var users []User
 
@@ -30,7 +29,7 @@ func makeUsers(filename string) ([]User, error) {
 }
 
 func getFileData(filename string) ([]byte, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -60,15 +59,12 @@ func findById(id string, users []User) []byte {
 	return []byte{}
 }
 
-func addUserById(id string, users []User) ([]User, error) {
+func addUser(item string, users []User) ([]User, error) {
 	var user User
 
-	if err := json.Unmarshal([]byte(id), &user); err != nil {
-		return users, fmt.Errorf("Error unmarshaling %q: %w", id, err)
+	if err := json.Unmarshal([]byte(item), &user); err != nil {
+		return users, fmt.Errorf("Error unmarshaling %q: %w", item, err)
 	}
-
-	log.Println("user.Id: ", user.Id)
-	log.Println("Users: ", users)
 
 	if idExists(user.Id, users) {
 		return users, fmt.Errorf("Item with id %v already exists", user.Id)
@@ -89,7 +85,7 @@ func idExists(id string, users []User) bool {
 }
 
 func saveUsers(filename string, users []User) error {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_RDWR|os.O_SYNC, 0777)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 
 	if err != nil {
 		return fmt.Errorf("Error openning %q: %w", filename, err)

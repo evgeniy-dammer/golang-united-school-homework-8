@@ -50,7 +50,7 @@ func addOperation(args Arguments, writer io.Writer) error {
 		return fmt.Errorf("Error fetching users: %w", err)
 	}
 
-	newUsers, err := addUserById(args["id"], users)
+	newUsers, err := addUser(args["item"], users)
 
 	if err != nil {
 		writer.Write([]byte(err.Error()))
